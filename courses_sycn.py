@@ -25,16 +25,16 @@ def get_captcha(jAccountWebdriver):
     os.remove('captcha.jpg')
     return captcha_text
 
-def login(url):
-    Webdriver=webdriver.Edge()
-    Webdriver.get(url)
+def login(Webdriver):
+    Webdriver.get("https://my.sjtu.edu.cn/")
     time.sleep(3)
     Webdriver.find_element(By.ID,'input-login-user').send_keys("jAccount")
     Webdriver.find_element(By.ID,'input-login-pass').send_keys("Password")
     Webdriver.find_element(By.ID,'input-login-captcha').send_keys(get_captcha(Webdriver))
     Webdriver.find_element(By.ID,'submit-password-button').click()
     time.sleep(3)
-    Webdriver.quit()
-
-login("http://180.76.151.202/oauth/jacAuth.mooc")
+    if Webdriver.current_url=="https://mt.sjtu.edu.cn/ui/task":
+        return True
+    else:
+        return False
 # http://180.76.151.202/oauth/jacAuth.mooc
