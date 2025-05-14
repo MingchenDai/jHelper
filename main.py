@@ -16,8 +16,4 @@ isLogin=False
 while not isLogin:
     isLogin=jAccount.login(driver)
     time.sleep(1)
-
-year=2024
-
-input()
 driver.close()

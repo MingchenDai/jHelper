@@ -96,3 +96,37 @@ def get_ongoing_course_list(year,semester,driver):
 #
 # for course in course_detailed:
 #     print(course)
+
+def exams():
+    head={
+        "Accept":"application/json, text/javascript, */*; q=0.01",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+        "Connection": "keep-alive",
+        "Content-Length": "185",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Cookie": "_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;"
+                  "_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;"
+                  "_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;"
+                  "_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;"
+                  "_ga=GA1.3.1152377759.1729079753;"
+                  "_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;"
+                  "i.sjtu.edu.cn=22632.57526.21071.0000;"
+                  "JSESSIONID="+"89CA06DC2B7344C72EBBFCEEAA742BD1",
+        "Host": "i.sjtu.edu.cn",
+        "Origin": "https://i.sjtu.edu.cn",
+        "Referer": "https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default",
+        "Sec-Fetch-Dest": 'empty',
+        "Sec-Fetch-Mode": 'cors',
+        "Sec-Fetch-Site": 'same-origin',
+        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0',
+        "X-Requested-With": 'XMLHttpRequest',
+        "sec-ch-ua": '"Chromium";v="136", "Microsoft Edge";v="136", "Not.A/Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "Windows",
+    }
+    res=requests.post("https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105&xnm=2024&xqm=12",headers=head)
+    print(res.status_code)
+    print(res.text)
+
+exams()

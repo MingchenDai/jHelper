@@ -10,7 +10,11 @@ from io import BytesIO
 from PIL import Image
 from selenium.webdriver.common.by import By
 
+import files
+
 captcha_url="https://plus.sjtu.edu.cn/captcha-solver/"
+jAccount=files.read_config("jAccount","jAccount")
+password=files.read_config("jAccount","Password")
 
 def base64_to_image(base64_str):
     base64_data=re.sub('^data:image/.+;base64,', '', base64_str)
@@ -48,11 +52,13 @@ def captcha(driver):
     return result
 
 def login(driver):
-    driver.get("https://my.sjtu.edu.cn/")
-    if driver.current_url == "https://my.sjtu.edu.cn/ui/task":
+    driver.get("https://i.sjtu.edu.cn/")
+    time.sleep(1)
+    driver.find_element(By.ID, "authJwglxtLoginURL").click()
+    if driver.current_url.find("jaccount")==-1:
         return True
-    driver.find_element(By.ID, 'input-login-user').send_keys('T.resol')
-    driver.find_element(By.ID, 'input-login-pass').send_keys('cuffyh-0wygwA-xipren')
+    driver.find_element(By.ID, 'input-login-user').send_keys(jAccount)
+    driver.find_element(By.ID, 'input-login-pass').send_keys(password)
     driver.find_element(By.ID, 'input-login-captcha').send_keys(captcha(driver))
     time.sleep(1)
     driver.find_element(By.ID, 'submit-password-button').click()
