@@ -1,8 +1,3 @@
-import re
-import time
-from selenium.webdriver.common.by import By
-from seleniumwire import webdriver
-import json
 import requests
 import jAccount
 
@@ -45,48 +40,16 @@ def system_semester(semester):
     return None
 
 
-def get_current_information(driver):
-    head = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Encoding": "gzip, deflate, br, zstd",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-        "Connection": "keep-alive",
-        "Cookie": "JSESSIONID=0F4971FE46EC6FEF30DF7B891316C475;"
-                  "_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;"
-                  "_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;"
-                  "_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;"
-                  "_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;"
-                  "_ga=GA1.3.1152377759.1729079753;"
-                  "_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;"
-                  "10.118.1.88:8080=22633.57434.19855.0000;"
-                  "JSESSIONID=" + jAccount.get_session_id(driver) + ";"
-                                                                    "10.118.1.92:8080=22633.57438.19855.0000",
-        "Host": "j.sjtu.edu.cn",
-        "Referer": 'https://j.sjtu.edu.cn/app/ui/index',
-        "Sec-Fetch-Dest": 'empty',
-        "Sec-Fetch-Mode": 'cors',
-        "Sec-Fetch-Site": 'same-origin',
-        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0',
-        "sec-ch-ua": '"Chromium";v="136", "Microsoft Edge";v="136", "Not.A/Brand";v="99"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "Windows",
-    }
-    request_url = "https://j.sjtu.edu.cn/app/stu/mobile/index?locale=zh"
-    target_string = requests.get(request_url, headers=head).json()["data"]["title"]
-    week = re.findall(r'第 (.*?) 周', target_string)[0]
-    semester = re.findall(r' (.*?)学期', target_string)[0]
-    if semester == '春季':
-        semester = '2'
-    elif semester == '夏季':
-        semester = '3'
-    elif semester == '秋季':
-        semester = '1'
-    year = str(int(re.findall(r'-(.*?) ', target_string)[0])+1999)
+def get_current_information():
+    request_url = "https://ids.sjtu.edu.cn/course/findCurSemester"
+    target_string = requests.get(request_url).json()["data"]
+    week = str(target_string["week"])
+    semester = int(target_string["sename"])
+    year = int((int(str(target_string["year"]).replace("-", "")) - 1) / 10001)
     return year, semester, week
 
-
 # `year` should in syntax as '2024' and semester should be an integer in [1,3]
-def get_selected_course_list(year,semester,driver):
+def get_selected_course_list(year=get_current_information()[0], semester=get_current_information()[1], driver=None,session_id=None):
     head = {
         "Accept": "application/json, text/javascript, */*; q=0.01",
         "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -114,90 +77,65 @@ def get_selected_course_list(year,semester,driver):
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': 'Windows',
     }
-    request_url="https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
-    request_parameter="&xnm="+year+"&xqm="+system_semester(semester)+"&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc"
-    res=requests.post(url=request_url+request_parameter,headers=head)
-    print(res.text)
-
-
-def get_ongoing_course_list(year, semester, driver):
-    url = "https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113"
-    request_parameter = "&xnm=" + str(year) + "&xqm=" + system_semester(semester) + "&queryModel.showCount=5000"
-    url += request_parameter
-    driver.get("https://i.sjtu.edu.cn/design/viewFunc_cxDesignFuncPageIndex.html?gnmkdm=N2199113&layout=default")
-    time.sleep(1)
-    driver.find_element(By.ID, "authJwglxtLoginURL").click()
-    time.sleep(1)
-    driver.get(url)
-    selected_course_list = json.loads(driver.find_element(By.TAG_NAME, "pre").text)['items']
-    selected_course_list.sort(key=lambda course: course['jxbmc'])
+    if session_id is None:
+        head['Cookie']+=jAccount.get_session_id(driver)
+    else:
+        head['Cookie']+=session_id
+    request_url = "https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
+    request_parameter = '&xnm='
+    if year != 0:
+        request_parameter += str(year)
+    request_parameter += '&xqm='
+    if semester != 0:
+        request_parameter += system_semester(semester)
+    request_parameter +="&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc"
+    selected_course_list = requests.post(url=request_url + request_parameter, headers=head).json()["items"]
     return selected_course_list
 
 
-# driver=webdriver.Edge()
-# jAccount.login(driver)
-#
-# dataSource_consist = "https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?doType=query&gnmkdm=N155325"
-# dataSource_detail = "https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113&xnm=2025&xqm=3&_search=false&nd="+str(int(time.time()*1000))+"&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc"
-#
-# metaData_head = {
-#     "Accept": "application/json, text/javascript, */*; q=0.01",
-#     "Accept-Encoding": "gzip, deflate, br, zstd",
-#     "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-#     "Connection": "keep-alive",
-#     "Cache-Control": "max-age=0",
-#     "Cookie": "_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;"
-#               "_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;"
-#               "_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;"
-#               "_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;"
-#               "_ga=GA1.3.1152377759.1729079753;"
-#               "_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;"
-#               "i.sjtu.edu.cn=22632.57725.21071.0000;"
-#               "JSESSIONID="+jAccount.get_session_id(driver),
-#     "Host": "i.sjtu.edu.cn",
-#     "Sec-Fetch-Dest": "document",
-#     "Sec-Fetch-Mode": "navigate",
-#     "Sec-Fetch-Site": "none",
-#     "Sec-Fetch-User": "?1",
-#     "Upgrade-Insecure-Requests": "1",
-#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0",
-#     "X-Requested-With": "XMLHttpRequest",
-#     "sec-ch-ua": '"Chromium";v="136", "Microsoft Edge";v="136", "Not.A/Brand";v="99"',
-#     "sec-ch-ua-mobile": "?0",
-#     "sec-ch-ua-platform": "Windows"
-# }
-# print(metaData_head["Cookie"])
-# print(dataSource_detail)
-# res=requests.get(dataSource_detail, headers=metaData_head)
-# time.sleep(10)
-# print(res.text)
-# print(res.status_code)
-# course_raw_detailed = json.loads(requests.get(dataSource_detail, headers=metaData_head).text)['items']
-# course_raw_detailed.sort(key=lambda x: x['jxbmc'])
-# course_detailed = []
-# for item in course_raw_detailed:
-#     # What's the fuck.
-#     # | kcdm            | jxbmc                   | nj             | kcmc | jsxx                      | kcap                | xf     | skyy     | kkbm
-#     # | Code for course | Code for teaching class | Code for grade | Name | Information of Teacher(s) | Course Arrangements | Points | Language | Academy
-#     course_detailed.append(
-#         [item['kcdm'], item['jxbmc'], item['nj'], item['kcmc'], item['jsxx'], item['kcap'], float(item['xf']),
-#          item['skyy']])
-#
-# for course in course_detailed:
-#     print(course)
+def get_exam_list(year=get_current_information()[0], semester=get_current_information()[1], driver=None,session_id=None):
+    head = {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'Connection': 'keep-alive',
+        'Content-Length': '185',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'Cookie': '_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
+                  '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
+                  '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
+                  '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
+                  '_ga=GA1.3.1152377759.1729079753;'
+                  '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
+                  'i.sjtu.edu.cn=22632.57526.21071.0000;'
+                  'JSESSIONID=',
+        'Host': 'i.sjtu.edu.cn',
+        'Origin': 'https://i.sjtu.edu.cn',
+        'Referer': 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0',
+        'X-Requested-With': 'XMLHttpRequest',
+        'sec-ch-ua': '"Chromium";v="136", "Microsoft Edge";v="136", "Not.A/Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': 'Windows',
+    }
+    if session_id is None:
+        head['Cookie']+=jAccount.get_session_id(driver)
+    else:
+        head['Cookie']+=session_id
+    request_url = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105'
+    request_parameter = '&xnm='
+    if year!=0:
+        request_parameter+=str(year)
+    request_parameter+='&xqm='
+    if semester!=0:
+        request_parameter+=system_semester(semester)
+    request_parameter+='&ksmcdmb_id=&kch=&kc=&ksrq=&kkbm_id=&_search=false&nd=1747225053795&queryModel.showCount=15&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc&time=1'
+    exam_list = requests.post(url=request_url + request_parameter, headers=head).json()["items"]
+    return exam_list
 
-def exams(year, term=0, driver=None):
-    request_url = "https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105&xnm=" + str(
-        year) + "&xqm=" + system_semester(term)
-    head = get_request_head(driver)
-    head["Origin"] = "https://i.sjtu.edu.cn"
-    head["Content-Length"] = "185"
-    head["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
-    head["Referer"] = "https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default"
-    head["Sec-Fetch-Dest"] = "empty"
-    head["Sec-Fetch-Mode"] = "cors"
-    res = requests.post(
-        "https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105&xnm=2024&xqm=12",
-        headers=get_request_head(driver))
-    print(res.status_code)
-    print(res.text)
+
+def get_score_list(year=get_current_information()[0], semester=get_current_information()[1], driver=None,session_id=None):
+    return
