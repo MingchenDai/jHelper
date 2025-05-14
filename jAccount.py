@@ -63,7 +63,7 @@ def login(driver):
     time.sleep(1)
     driver.find_element(By.ID, 'submit-password-button').click()
     time.sleep(1)
-    if driver.current_url == "https://my.sjtu.edu.cn/ui/task":
+    if driver.current_url.find("jaccount")==-1:
         return True
     return False
 
