@@ -16,6 +16,7 @@ isLogin=False
 while not isLogin:
     isLogin=jAccount.login(driver)
     time.sleep(1)
-print(academic.get_score_list(0,0,driver))
+print(academic.get_ongoing_course_list(0,0,driver))
+print("OK")
 input()
 driver.close()
