@@ -4,7 +4,7 @@ from seleniumwire import webdriver
 from selenium.webdriver.common.by import By
 import time
 import jAccount
-import academic
+import Academic
 from selenium.webdriver.edge.options import Options
 
 # driver_options=Options()
@@ -16,7 +16,7 @@ isLogin=False
 while not isLogin:
     isLogin=jAccount.login(driver)
     time.sleep(1)
-print(academic.get_ongoing_course_list(0,0,driver))
+print(Academic.get_exam_list(0,0,driver))
 print("OK")
 input()
 driver.close()
