@@ -69,8 +69,8 @@ def get_list(year: int, semester: int, request_url: str, default_request_paramet
         raise RuntimeError("Fail at function Academic.get_list") from e
 
 
-# `year` should in syntax as '2024' and semester should be an integer in [1,3]
-def get_selected_course_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
+def get_selected_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
+                             session_id: 'str' = None) -> List[Dict[str, Any]]:
     referer = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default'
     request_url = "https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
     request_parameter = "&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc"
@@ -82,10 +82,11 @@ def get_selected_course_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=
               '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
               'i.sjtu.edu.cn=22632.58179.21071.0000;'
               'JSESSIONID=')
-    return get_list(year,semester,request_url,request_parameter,cookie,referer,driver,session_id)
+    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
 
 
-def get_exam_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
+def get_exam_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None, session_id: 'str' = None) -> List[
+    Dict[str, Any]]:
     referer = 'https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?gnmkdm=N255010&layout=default'
     request_url = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105'
     request_parameter = '&ksmcdmb_id=&kch=&kc=&ksrq=&kkbm_id=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
@@ -100,53 +101,109 @@ def get_exam_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, sessi
     return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
 
 
-def get_score_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
-    referer='https://i.sjtu.edu.cn/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default'
+def get_score_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None, session_id: 'str' = None) -> List[
+    Dict[str, Any]]:
+    referer = 'https://i.sjtu.edu.cn/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default'
     request_url = 'https://i.sjtu.edu.cn/cjcx/cjcx_cxXsgrcj.html?doType=query&gnmkdm=N305005'
     request_parameter = '&kcbj=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
-    cookie=('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-            '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-            '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-            '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-            '_ga=GA1.3.1152377759.1729079753;'
-            '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-            'i.sjtu.edu.cn=22632.57526.21071.0000;'
-            'JSESSIONID=')
+    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
+              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
+              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
+              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
+              '_ga=GA1.3.1152377759.1729079753;'
+              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
+              'i.sjtu.edu.cn=22632.57526.21071.0000;'
+              'JSESSIONID=')
     return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
 
 
-def get_ongoing_course_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
-    referer='https://i.sjtu.edu.cn/design/viewFunc_cxDesignFuncPageIndex.html?gnmkdm=N2199113&layout=default'
+def get_ongoing_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
+                            session_id: 'str' = None) -> List[Dict[str, Any]]:
+    referer = 'https://i.sjtu.edu.cn/design/viewFunc_cxDesignFuncPageIndex.html?gnmkdm=N2199113&layout=default'
     request_url = 'https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113'
     request_parameter = '&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
-    cookie=('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-            '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-            '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-            '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-            '_ga=GA1.3.1152377759.1729079753;'
-            '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-            'i.sjtu.edu.cn=22632.58179.21071.0000;'
-            'JSESSIONID=')
+    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
+              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
+              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
+              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
+              '_ga=GA1.3.1152377759.1729079753;'
+              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
+              'i.sjtu.edu.cn=22632.58179.21071.0000;'
+              'JSESSIONID=')
     return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
 
 
-def get_detailed_course_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
-    referer='https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?gnmkdm=N155325&layout=default'
+def get_detailed_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
+                             session_id: 'str' = None) -> List[Dict[str, Any]]:
+    referer = 'https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?gnmkdm=N155325&layout=default'
     request_url = 'https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?doType=query&gnmkdm=N155325'
     request_parameter = '&kkbm_id=&kch=&kcmc=&jsxm=&xsdm=&zc=&rlzt=&xqh_id=&njdm_id=&zyh_id=&bjmc=&jxbmc=&cdmc=&kcxzdm=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
+    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
+              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
+              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
+              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
+              '_ga=GA1.3.1152377759.1729079753;'
+              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
+              'i.sjtu.edu.cn=22632.58179.21071.0000;'
+              'JSESSIONID=')
+    raw_list = get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+    keys = set()
+    detailed_course_list = []
+    for item in raw_list:
+        key = item['jxbmc']
+        if key not in keys:
+            keys.add(key)
+            detailed_course_list.append(item)
+    return detailed_course_list
+
+
+def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
+                             session_id: 'str' = None) -> List[Dict[str, Any]]:
+    ongoing_course_list = get_ongoing_course_list(year, semester, driver, session_id)
+    detailed_course_list = get_detailed_course_list(year, semester, driver, session_id)
+    ongoing_course_dictionary = {item['jxbmc']: item for item in ongoing_course_list}
+    detailed_course_dictionary = {item['jxbmc']: item for item in detailed_course_list}
+    all_keys = set(ongoing_course_dictionary.keys()) | set(detailed_course_dictionary.keys())
+    complete_course_list = []
+    for key in all_keys:
+        merged_keys = {'jxbmc': key}
+        if key in detailed_course_dictionary:
+            for sub_key, value in detailed_course_dictionary[key].items():
+                merged_keys[sub_key] = value
+        if key in ongoing_course_list:
+            for sub_key, value in ongoing_course_dictionary[key].items():
+                if sub_key not in merged_keys:
+                    merged_keys[sub_key] = value
+        complete_course_list.append(merged_keys)
+    return complete_course_list
+
+def get_gpa(start_year:'int'=0,end_year:'int'=0,start_semester:'int'=0,end_semester:'int'=0,isCore:'bool'=True,driver:'webdriver'=None,session_id:'str'=None)->list|None:
+    if start_year>end_year or (start_year==end_year and end_semester>end_semester):
+        return []
+    start_year_and_semester=str(start_year)+system_semester(start_semester).zfill(2)
+    end_year_and_semester=str(end_year)+system_semester(end_semester).zfill(2)
+    request_parameter='qsXnxq='+start_year_and_semester+'&zzXnxq='+end_year_and_semester
+    request_parameter+=('&tjgx=0&alsfj=&sspjfblws=9&pjjdblws=9&bjpjf=%E7%BC%93%E8%80%83%2C%E7%BC%93%E8%80%83(%E9%87%8D%E8%80%83)'
+                        '%2C%E5%B0%9A%E6%9C%AA%E4%BF%AE%E8%AF%BB%2C%E6%9A%82%E4%B8%8D%E8%AE%B0%E5%BD%95%2C%E4%B8%AD%E6%9C%9F%E9'
+                        '%80%80%E8%AF%BE%2C%E9%87%8D%E8%80%83%E6%8A%A5%E5%90%8D&bjjd=%E7%BC%93%E8%80%83%2C%E7%BC%93%E8%80%83(%E'
+                        '9%87%8D%E8%80%83)%2C%E5%B0%9A%E6%9C%AA%E4%BF%AE%E8%AF%BB%2C%E6%9A%82%E4%B8%8D%E8%AE%B0%E5%BD%95%2C%E4%'
+                        'B8%AD%E6%9C%9F%E9%80%80%E8%AF%BE%2C%E9%87%8D%E8%80%83%E6%8A%A5%E5%90%8D&kch_ids=MARX1205%2CTH009%2CTH0'
+                        '20%2CFCE62B4E084826EBE055F8163EE1DCCC&bcjkc_id=&bcjkz_id=&cjkz_id=&cjxzm=zhyccj&kcfw=')
+    request_parameter+='hxkc' if isCore else 'qbkc'
+    request_parameter+='&tjfw=njzy&xjzt=1'
+    referer = 'https://i.sjtu.edu.cn/cjpmtj/gpapmtj_cxGpaxjfcxIndex.html?gnmkdm=N309131&layout=default'
+    request_url = 'https://i.sjtu.edu.cn/cjpmtj/gpapmtj_tjGpapmtj.html?gnmkdm=N309131'
     cookie=('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
             '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
             '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
             '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
             '_ga=GA1.3.1152377759.1729079753;'
             '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-            'i.sjtu.edu.cn=22632.58179.21071.0000;'
+            'i.sjtu.edu.cn=22632.57615.21071.0000;'
             'JSESSIONID=')
-    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
-
-
-def get_complete_course_list(year:'int'=0, semester:'int'=0, driver:'webdriver'=None, session_id:'str'=None):
-    ongoing_course_list = get_ongoing_course_list(year, semester, driver, session_id)
-    ongoing_course_list.sort(key=lambda course:course['jxbmc'])
-    detailed_course_list = get_detailed_course_list(year, semester, driver, session_id)
-    ongoing_course_list.sort(key=lambda course: course['jxbmc'])
+    head = build_headers(cookie, referer)
+    res=requests.post(request_url+request_parameter,headers=head)
+    print(request_url+request_parameter)
+    print(res.status_code)
+    print(res.text)
+    return []
