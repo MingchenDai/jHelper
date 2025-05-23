@@ -7,7 +7,10 @@ import time
 from io import BytesIO
 from PIL import Image
 from selenium.webdriver.common.by import By
+from seleniumwire import webdriver
+
 import files
+import seleniumwire
 
 captcha_url = "https://plus.sjtu.edu.cn/captcha-solver/"
 jAccount = files.read_config("jAccount", "jAccount")
@@ -89,3 +92,7 @@ def logout(driver):
         print("Fail at function jAccount.logout: ", e)
     driver.get("https://my.sjtu.edu.cn/")
     return driver.current_url != "https://my.sjtu.edu.cn/ui/task"
+
+def is_login(driver:'webdriver'=None)->bool:
+    driver.get("https://my.sjtu.edu.cn/")
+    return "jAccount" not in driver.current_url

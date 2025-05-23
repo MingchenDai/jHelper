@@ -8,7 +8,7 @@ SEMESTER_MAP = {
     2: "12",
     3: "16"
 }
-
+ideal_course_list=[]
 
 def system_semester(semester: int) -> Optional[str]:
     return SEMESTER_MAP.get(semester)
@@ -26,6 +26,7 @@ def get_current_information() -> tuple[int, int, int]:
         return week, semester, year
     except (requests.RequestException, KeyError, ValueError) as e:
         raise RuntimeError("Fail at function Academic.get_current_information") from e
+
 
 
 def build_headers(cookie: str, referer: str) -> dict:
@@ -64,7 +65,7 @@ def get_list(year: int, semester: int, request_url: str, default_request_paramet
     try:
         response = requests.post(url=request_url + request_parameter, headers=head)
         response.raise_for_status()
-        return response.json().get("items", [])
+        return response.json().get("items", []) if response.status_code == 200 else []
     except(requests.RequestException, ValueError) as e:
         raise RuntimeError("Fail at function Academic.get_list") from e
 
@@ -177,33 +178,5 @@ def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
         complete_course_list.append(merged_keys)
     return complete_course_list
 
-def get_gpa(start_year:'int'=0,end_year:'int'=0,start_semester:'int'=0,end_semester:'int'=0,isCore:'bool'=True,driver:'webdriver'=None,session_id:'str'=None)->list|None:
-    if start_year>end_year or (start_year==end_year and end_semester>end_semester):
-        return []
-    start_year_and_semester=str(start_year)+system_semester(start_semester).zfill(2)
-    end_year_and_semester=str(end_year)+system_semester(end_semester).zfill(2)
-    request_parameter='qsXnxq='+start_year_and_semester+'&zzXnxq='+end_year_and_semester
-    request_parameter+=('&tjgx=0&alsfj=&sspjfblws=9&pjjdblws=9&bjpjf=%E7%BC%93%E8%80%83%2C%E7%BC%93%E8%80%83(%E9%87%8D%E8%80%83)'
-                        '%2C%E5%B0%9A%E6%9C%AA%E4%BF%AE%E8%AF%BB%2C%E6%9A%82%E4%B8%8D%E8%AE%B0%E5%BD%95%2C%E4%B8%AD%E6%9C%9F%E9'
-                        '%80%80%E8%AF%BE%2C%E9%87%8D%E8%80%83%E6%8A%A5%E5%90%8D&bjjd=%E7%BC%93%E8%80%83%2C%E7%BC%93%E8%80%83(%E'
-                        '9%87%8D%E8%80%83)%2C%E5%B0%9A%E6%9C%AA%E4%BF%AE%E8%AF%BB%2C%E6%9A%82%E4%B8%8D%E8%AE%B0%E5%BD%95%2C%E4%'
-                        'B8%AD%E6%9C%9F%E9%80%80%E8%AF%BE%2C%E9%87%8D%E8%80%83%E6%8A%A5%E5%90%8D&kch_ids=MARX1205%2CTH009%2CTH0'
-                        '20%2CFCE62B4E084826EBE055F8163EE1DCCC&bcjkc_id=&bcjkz_id=&cjkz_id=&cjxzm=zhyccj&kcfw=')
-    request_parameter+='hxkc' if isCore else 'qbkc'
-    request_parameter+='&tjfw=njzy&xjzt=1'
-    referer = 'https://i.sjtu.edu.cn/cjpmtj/gpapmtj_cxGpaxjfcxIndex.html?gnmkdm=N309131&layout=default'
-    request_url = 'https://i.sjtu.edu.cn/cjpmtj/gpapmtj_tjGpapmtj.html?gnmkdm=N309131'
-    cookie=('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-            '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-            '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-            '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-            '_ga=GA1.3.1152377759.1729079753;'
-            '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-            'i.sjtu.edu.cn=22632.57615.21071.0000;'
-            'JSESSIONID=')
-    head = build_headers(cookie, referer)
-    res=requests.post(request_url+request_parameter,headers=head)
-    print(request_url+request_parameter)
-    print(res.status_code)
-    print(res.text)
-    return []
+def select_course(class_id:'str'='',driver:'webdriver'=None):
+    return
