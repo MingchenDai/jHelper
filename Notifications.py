@@ -1,5 +1,4 @@
 from typing import Tuple, List, Dict
-
 import requests
 from bs4 import BeautifulSoup
 

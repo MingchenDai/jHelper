@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import files
+import Files
 
 sender_server = files.read_config('Mail', 'Sender_Server')
 sender_account = files.read_config('Mail', 'Sender_Account')

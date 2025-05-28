@@ -1,4 +1,8 @@
+import time
+
 import requests
+
+import Files
 import jAccount
 from typing import Optional, Dict, List, Any
 import seleniumwire.webdriver as webdriver
@@ -25,7 +29,7 @@ def get_current_information() -> tuple[int, int, int]:
         year = int((int(str(data["year"]).replace("-", "")) - 1) / 10001)
         return week, semester, year
     except (requests.RequestException, KeyError, ValueError) as e:
-        raise RuntimeError("Fail at function Academic.get_current_information") from e
+        raise RuntimeError(Files.exception_throw_out(1)) from e
 
 
 
@@ -67,7 +71,7 @@ def get_list(year: int, semester: int, request_url: str, default_request_paramet
         response.raise_for_status()
         return response.json().get("items", []) if response.status_code == 200 else []
     except(requests.RequestException, ValueError) as e:
-        raise RuntimeError("Fail at function Academic.get_list") from e
+        raise RuntimeError(Files.exception_throw_out()) from e
 
 
 def get_selected_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
@@ -125,11 +129,11 @@ def get_ongoing_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdr
     request_parameter = '&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
     cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
               '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
+              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0; '
+              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0; '
               '_ga=GA1.3.1152377759.1729079753;'
               '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.58179.21071.0000;'
+              'i.sjtu.edu.cn=22632.58171.21071.0000;'
               'JSESSIONID=')
     return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
 
@@ -145,7 +149,7 @@ def get_detailed_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
               '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
               '_ga=GA1.3.1152377759.1729079753;'
               '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.58179.21071.0000;'
+              'i.sjtu.edu.cn=22632.58171.21071.0000;'
               'JSESSIONID=')
     raw_list = get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
     keys = set()
@@ -171,7 +175,7 @@ def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
         if key in detailed_course_dictionary:
             for sub_key, value in detailed_course_dictionary[key].items():
                 merged_keys[sub_key] = value
-        if key in ongoing_course_list:
+        if key in ongoing_course_dictionary:
             for sub_key, value in ongoing_course_dictionary[key].items():
                 if sub_key not in merged_keys:
                     merged_keys[sub_key] = value

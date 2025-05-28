@@ -9,12 +9,12 @@ from PIL import Image
 from selenium.webdriver.common.by import By
 from seleniumwire import webdriver
 
-import files
+import Files
 import seleniumwire
 
 captcha_url = "https://plus.sjtu.edu.cn/captcha-solver/"
-jAccount = files.read_config("jAccount", "jAccount")
-password = files.read_config("jAccount", "Password")
+jAccount = Files.read_config("jAccount", "jAccount")
+password = Files.read_config("jAccount", "Password")
 
 
 def base64_to_image(base64_str):
@@ -57,14 +57,14 @@ def captcha(driver) -> str:
     return result
 
 
-def login(driver):
+def login(driver) -> bool:
     driver.get("https://i.sjtu.edu.cn/")
     time.sleep(1)
 
     try:
         driver.find_element(By.ID, "authJwglxtLoginURL").click()
     except Exception as e:
-        print("Fail at function jAccount.login: ", e)
+        raise RuntimeError(Files.exception_throw_out()) from e
 
     if "jaccount" not in driver.current_url:
         return True
@@ -77,22 +77,23 @@ def login(driver):
     return "jAccount" not in driver.current_url
 
 
-def get_session_id(driver):
+def get_session_id(driver) -> str:
     cookie = driver.get_cookie('JSESSIONID')
     return cookie['value'] if cookie else None
 
 
-def logout(driver):
+def logout(driver) -> bool:
     driver.get("https://my.sjtu.edu.cn/")
     if driver.current_url != "https://my.sjtu.edu.cn/ui/task":
         return True
     try:
         driver.execute_cdp_cmd("Network.clearBrowserCookies", {"name": 'JSESSIONID'})
     except Exception as e:
-        print("Fail at function jAccount.logout: ", e)
+        raise RuntimeError(Files.exception_throw_out()) from e
     driver.get("https://my.sjtu.edu.cn/")
-    return driver.current_url != "https://my.sjtu.edu.cn/ui/task"
+    return True if 'jaccount' not in driver.current_url else False
 
-def is_login(driver:'webdriver'=None)->bool:
+
+def is_login(driver: 'webdriver' = None) -> bool:
     driver.get("https://my.sjtu.edu.cn/")
-    return "jAccount" not in driver.current_url
+    return "jaccount" not in driver.current_url
