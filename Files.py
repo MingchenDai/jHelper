@@ -3,7 +3,7 @@ import pandas
 import inspect
 
 
-def exception_throw_out(depth:'int'=1) -> str:
+def exception_throw_out(depth: 'int' = 1) -> str:
     frame_info = inspect.stack()[depth]
     function_name = frame_info.function
     file_name = frame_info.filename

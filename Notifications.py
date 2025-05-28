@@ -41,4 +41,3 @@ def get_academic_news() -> Tuple[bool, List[Dict[str, str]]]:
         except Exception as e:
             raise RuntimeError("Fail at function Academic.get_academic_news") from e
     return True, result
-

@@ -6,11 +6,10 @@ import cv2
 import time
 from io import BytesIO
 from PIL import Image
+from selenium import webdriver
 from selenium.webdriver.common.by import By
-from seleniumwire import webdriver
 
 import Files
-import seleniumwire
 
 captcha_url = "https://plus.sjtu.edu.cn/captcha-solver/"
 jAccount = Files.read_config("jAccount", "jAccount")
@@ -38,8 +37,7 @@ def captcha_recognize() -> str:
         result = requests.post(captcha_url, files={"image": open('captcha.jpg', 'rb')}).json()['result']
         return result
     except Exception as e:
-        print("Fail at function jAccount.captcha_recognize: ", e)
-        return ''
+        raise RuntimeError(Files.exception_throw_out()) from e
 
 
 def captcha(driver) -> str:

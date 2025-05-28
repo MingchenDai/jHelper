@@ -1,18 +1,17 @@
-import time
-
 import requests
+from typing import Optional, Dict, List, Any
+import selenium.webdriver as webdriver
 
 import Files
 import jAccount
-from typing import Optional, Dict, List, Any
-import seleniumwire.webdriver as webdriver
 
 SEMESTER_MAP = {
     1: "3",
     2: "12",
     3: "16"
 }
-ideal_course_list=[]
+ideal_course_list = []
+
 
 def system_semester(semester: int) -> Optional[str]:
     return SEMESTER_MAP.get(semester)
@@ -30,7 +29,6 @@ def get_current_information() -> tuple[int, int, int]:
         return week, semester, year
     except (requests.RequestException, KeyError, ValueError) as e:
         raise RuntimeError(Files.exception_throw_out(1)) from e
-
 
 
 def build_headers(cookie: str, referer: str) -> dict:
@@ -182,5 +180,6 @@ def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
         complete_course_list.append(merged_keys)
     return complete_course_list
 
-def select_course(class_id:'str'='',driver:'webdriver'=None):
+
+def select_course(class_id: 'str' = '', driver: 'webdriver' = None):
     return
