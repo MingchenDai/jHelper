@@ -76,7 +76,7 @@ def get_selected_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
                              session_id: 'str' = None) -> List[Dict[str, Any]]:
     referer = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default'
     request_url = "https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
-    request_parameter = "&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc"
+    request_parameter = "&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc&nd=1748480400000"
     cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
               '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
               '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
@@ -124,7 +124,7 @@ def get_ongoing_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdr
                             session_id: 'str' = None) -> List[Dict[str, Any]]:
     referer = 'https://i.sjtu.edu.cn/design/viewFunc_cxDesignFuncPageIndex.html?gnmkdm=N2199113&layout=default'
     request_url = 'https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113'
-    request_parameter = '&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
+    request_parameter = '&kcdm=PYH1252&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc&jxbmc=(2025-2026-1)-PHY1252-05'
     cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
               '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
               '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0; '
