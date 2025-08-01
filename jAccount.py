@@ -1,10 +1,7 @@
-import base64
 import json
 import logging
-import os
 import re
 import time
-from io import BytesIO
 from typing import TypedDict, Dict, Tuple
 
 import cv2
@@ -142,44 +139,6 @@ def _fetch_and_solve_captcha(session: requests.Session, uuid: str, referer_url: 
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to fetch captcha image: {e}")
         raise RuntimeError(f"Failed to fetch captcha: {e}") from e
-#
-#
-# def base64_to_image(base64_str):
-#     base64_data = re.sub('^data:image/.+;base64,', '', base64_str)
-#     byte_data = base64.b64decode(base64_data)
-#     return Image.open(BytesIO(byte_data))
-#
-#
-# def captcha_recognize() -> str:
-#     try:
-#         result = requests.post(CAPTCHA_RECOGNIZE_URL, files={"image": open('captcha.jpg', 'rb')}).json()['result']
-#         return result
-#     except Exception as e:
-#         raise RuntimeError(Files.exception_throw_out()) from e
-#
-#
-# def captcha(uuid: str = "", header=None, cookie=None) -> str:
-#     if header is None:
-#         header = {}
-#     if not cookie:
-#         cookie = {}
-#     params = {
-#         "uuid": uuid,
-#         "t": int(time.time() * 1000)
-#     }
-#     response = requests.get(CAPTCHA_FETCH_URL, params=params, headers=header, cookies=cookie)
-#     response.raise_for_status()
-#     image_array = np.frombuffer(response.content, dtype=np.uint8)
-#     img_data = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-#     gray = cv2.cvtColor(img_data, cv2.COLOR_BGR2GRAY)
-#     blur = cv2.GaussianBlur(gray, (3, 3), 0)
-#     binary = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, 2)
-#     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-#     morph = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-#     cv2.imwrite('captcha.jpg', morph)
-#     result = captcha_recognize()
-#     os.remove("captcha.jpg")
-#     return result
 
 
 def login(account: str = "", password: str = "") -> AuthCookies:
@@ -241,9 +200,9 @@ def login(account: str = "", password: str = "") -> AuthCookies:
                     logger.info("Login credentials accepted. Following redirects to get final cookies.")
                     final_response = session.get(login_page_url, timeout=10)
                     final_response.raise_for_status()
-                    jSessionID=""
+                    jSessionID = ""
                     for cookie in final_response.cookies:
-                        if cookie.name == "JSESSIONID" and cookie.domain=="i.sjtu.edu.cn/":
+                        if cookie.name == "JSESSIONID" and cookie.domain == "i.sjtu.edu.cn/":
                             jSessionID = cookie.value
                             break
                     for resp in final_response.history:
@@ -359,4 +318,3 @@ def test_login_flow():
 
 if __name__ == '__main__':
     test_login_flow()
-
