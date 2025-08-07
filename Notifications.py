@@ -28,7 +28,7 @@ def get_academic_news() -> Tuple[bool, List[Dict[str, str]]]:
             title = news.find('div', class_='wz').find('h2').text.strip()
             link = news.find('div', class_='wz').find('a').get('href')
             if link.startswith('..'):
-                link = 'https://my.sjtu.edu.cn' + link[2:]
+                link = 'https://jwc.sjtu.edu.cn' + link[2:]
 
             summary = news.find('div', class_='wz').find('p').text.strip()
 

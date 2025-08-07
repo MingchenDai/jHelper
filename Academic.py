@@ -1,9 +1,13 @@
+from collections.abc import Callable
+from functools import wraps
+
 import requests
 from typing import Optional, Dict, List, Any
 import selenium.webdriver as webdriver
 
 import Files
 import jAccount
+from jAccount import login
 
 SEMESTER_MAP = {
     1: "3",
@@ -15,6 +19,12 @@ ideal_course_list = []
 
 def system_semester(semester: int) -> Optional[str]:
     return SEMESTER_MAP.get(semester)
+
+
+def academic_semester(year: int = 0, semester: int = 0) -> Dict[str, str]:
+    academic_semester_info = {'xnm': year if year else "",
+                              'xqm': system_semester(semester) if semester in range(1, 4) else ""}
+    return academic_semester_info
 
 
 def get_current_information() -> tuple[int, int, int]:
@@ -29,6 +39,38 @@ def get_current_information() -> tuple[int, int, int]:
         return week, semester, year
     except (requests.RequestException, KeyError, ValueError) as e:
         raise RuntimeError(Files.exception_throw_out(1)) from e
+
+
+# def AcademicQuery(f:Callable[[],tuple[dict,str]]):
+#     def decorator(year:int=0,semester:int=0,cookie:jAccount.AuthCookies=None) -> List[str,any]:
+#         year =str(year) if year else ""
+#         semester =str(system_semester(semester)) if semester else ""
+#         cookie=jAccount._auth_cookies_to_dict(cookie)
+#         params,url=f()
+#         params['xnm']=year
+#         params['xqm']=semester
+#         try:
+#             response = requests.get(url, params=params, cookies=cookie)
+#             response.raise_for_status()
+#             return response.json().get("items", []) if response.status_code == 200 else []
+#         except(requests.RequestException, ValueError) as e:
+#             raise RuntimeError(Files.exception_throw_out()) from e
+#     return decorator
+
+
+def query(f) -> Callable:
+    def decorator(*args, **kwargs) -> List[Dict]:
+        original_params, extra_params, cookie, url = f(*args, **kwargs)
+        final_params = original_params.copy()
+        final_params.update(extra_params)
+        try:
+            response = requests.get(url, params=final_params, cookies=cookie)
+            response.raise_for_status()
+            return response.json().get("items", []) if response.status_code == 200 else []
+        except requests.exceptions.RequestException as e:
+            return []
+
+    return decorator
 
 
 def build_headers(cookie: str, referer: str) -> dict:
@@ -72,98 +114,81 @@ def get_list(year: int, semester: int, request_url: str, default_request_paramet
         raise RuntimeError(Files.exception_throw_out()) from e
 
 
-def get_selected_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
-                             session_id: 'str' = None) -> List[Dict[str, Any]]:
-    referer = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?gnmkdm=N358105&layout=default'
-    request_url = "https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
-    request_parameter = "&kkxy_id=&kclbdm=&kcxzmc=&kch=&kklxdm=&kkzt=1&jxbmc=&jsxx=&kcgsdm=&xdbj=&fxbj=&cxbj=&zxbj=&sfzbh_kcflsj=&cxlx=&zyfx_id=&xklc=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=xkbjmc%2Cxnmc%2Cxqmc%2Ckkxymc%2Ckch%2Cjxbmc%2Cxh+&queryModel.sortOrder=asc&nd=1748480400000"
-    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-              '_ga=GA1.3.1152377759.1729079753;'
-              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.58179.21071.0000;'
-              'JSESSIONID=')
-    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+@query
+def get_selected_course_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> tuple[
+    dict, dict, dict, str]:
+    API = "https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?doType=query&gnmkdm=N255010"
+    PARAMETERS = {
+        "queryModel.showCount": 5000,
+    }
+    EXTRA_PARAMETERS = academic_semester(year, semester)
+    COOKIES = jAccount.auth_cookies_to_dict(cookie)
+    return PARAMETERS, EXTRA_PARAMETERS, COOKIES, API
 
 
-def get_exam_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None, session_id: 'str' = None) -> List[
-    Dict[str, Any]]:
-    referer = 'https://i.sjtu.edu.cn/xkcx/xkmdcx_cxXkmdcxIndex.html?gnmkdm=N255010&layout=default'
-    request_url = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105'
-    request_parameter = '&ksmcdmb_id=&kch=&kc=&ksrq=&kkbm_id=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
-    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-              '_ga=GA1.3.1152377759.1729079753;'
-              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.57526.21071.0000;'
-              'JSESSIONID=')
-    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+@query
+def get_exam_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> tuple[
+    dict, dict, dict, str]:
+    API = 'https://i.sjtu.edu.cn/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105'
+    PARAMETERS = {
+        "queryModel.showCount": 5000,
+    }
+    EXTRA_PARAMETERS = academic_semester(year, semester)
+    COOKIES = jAccount.auth_cookies_to_dict(cookie)
+    return PARAMETERS, EXTRA_PARAMETERS, COOKIES, API
 
 
-def get_score_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None, session_id: 'str' = None) -> List[
-    Dict[str, Any]]:
-    referer = 'https://i.sjtu.edu.cn/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default'
-    request_url = 'https://i.sjtu.edu.cn/cjcx/cjcx_cxXsgrcj.html?doType=query&gnmkdm=N305005'
-    request_parameter = '&kcbj=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
-    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-              '_ga=GA1.3.1152377759.1729079753;'
-              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.57526.21071.0000;'
-              'JSESSIONID=')
-    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+@query
+def get_score_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> tuple[
+    dict, dict, dict, str]:
+    API = 'https://i.sjtu.edu.cn/cjcx/cjcx_cxXsgrcj.html?doType=query&gnmkdm=N305005'
+    PARAMETERS = {
+        "queryModel.showCount": 5000,
+    }
+    EXTRA_PARAMETERS = academic_semester(year, semester)
+    COOKIES = jAccount.auth_cookies_to_dict(cookie)
+    return PARAMETERS, EXTRA_PARAMETERS, COOKIES, API
 
 
-def get_ongoing_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
-                            session_id: 'str' = None) -> List[Dict[str, Any]]:
-    referer = 'https://i.sjtu.edu.cn/design/viewFunc_cxDesignFuncPageIndex.html?gnmkdm=N2199113&layout=default'
-    request_url = 'https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113'
-    request_parameter = '&kcdm=PYH1252&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc&jxbmc=(2025-2026-1)-PHY1252-05'
-    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0; '
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0; '
-              '_ga=GA1.3.1152377759.1729079753;'
-              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.58171.21071.0000;'
-              'JSESSIONID=')
-    return get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+@query
+def get_ongoing_course_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> tuple[
+    dict, dict, dict, str]:
+    API = 'https://i.sjtu.edu.cn/design/funcData_cxFuncDataList.html?func_widget_guid=8B04B7BBB49C4455E0530200A8C06482&gnmkdm=N2199113'
+    PARAMETERS = {
+        "queryModel.showCount": 114514,
+    }
+    EXTRA_PARAMETERS = academic_semester(year, semester)
+    COOKIES = jAccount.auth_cookies_to_dict(cookie)
+    return PARAMETERS, EXTRA_PARAMETERS, COOKIES, API
 
 
-def get_detailed_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
-                             session_id: 'str' = None) -> List[Dict[str, Any]]:
-    referer = 'https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?gnmkdm=N155325&layout=default'
-    request_url = 'https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?doType=query&gnmkdm=N155325'
-    request_parameter = '&kkbm_id=&kch=&kcmc=&jsxm=&xsdm=&zc=&rlzt=&xqh_id=&njdm_id=&zyh_id=&bjmc=&jxbmc=&cdmc=&kcxzdm=&_search=false&queryModel.showCount=5000&queryModel.currentPage=1&queryModel.sortName=+&queryModel.sortOrder=asc'
-    cookie = ('_ga_5G709VBQWD=GS1.3.1729079753.1.1.1729079788.0.0.0;'
-              '_ga_ZLV69XZE3V=GS1.1.1733391784.1.0.1733391787.0.0.0;'
-              '_ga_VGHWLGCC9B=GS1.1.1739709830.3.1.1739709850.0.0.0;'
-              '_ga_S9DWX8R79S=GS1.1.1744951884.1.0.1744951888.0.0.0;'
-              '_ga=GA1.3.1152377759.1729079753;'
-              '_ga_6VSNHLPM65=GS1.3.1745074767.14.0.1745074767.0.0.0;'
-              'i.sjtu.edu.cn=22632.58171.21071.0000;'
-              'JSESSIONID=')
-    raw_list = get_list(year, semester, request_url, request_parameter, cookie, referer, driver, session_id)
+@query
+def _get_detailed_course_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> tuple[
+    dict, dict, dict, str]:
+    API = 'https://i.sjtu.edu.cn/jxjcgl/jxjcwh_cxJxjdcxdcIndex.html?doType=query&gnmkdm=N155325'
+    PARAMETERS = {
+        "queryModel.showCount": 114514,
+    }
+    EXTRA_PARAMETERS = academic_semester(year, semester)
+    COOKIES = jAccount.auth_cookies_to_dict(cookie)
+    return PARAMETERS, EXTRA_PARAMETERS, COOKIES, API
+
+
+def get_detailed_course_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> List[dict]:
+    raw_list = _get_detailed_course_list(year, semester, cookie)
     keys = set()
     detailed_course_list = []
-    for item in raw_list:
-        key = item['jxbmc']
+    for course in raw_list:
+        key = course['jxbmc']
         if key not in keys:
             keys.add(key)
-            detailed_course_list.append(item)
+            detailed_course_list.append(course)
     return detailed_course_list
 
 
-def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webdriver' = None,
-                             session_id: 'str' = None) -> List[Dict[str, Any]]:
-    ongoing_course_list = get_ongoing_course_list(year, semester, driver, session_id)
-    detailed_course_list = get_detailed_course_list(year, semester, driver, session_id)
+def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, cookie: jAccount.AuthCookies = None) -> List[dict]:
+    ongoing_course_list = get_ongoing_course_list(year, semester, cookie)
+    detailed_course_list = get_detailed_course_list(year, semester, cookie)
     ongoing_course_dictionary = {item['jxbmc']: item for item in ongoing_course_list}
     detailed_course_dictionary = {item['jxbmc']: item for item in detailed_course_list}
     all_keys = set(ongoing_course_dictionary.keys()) | set(detailed_course_dictionary.keys())
@@ -181,5 +206,11 @@ def get_complete_course_list(year: 'int' = 0, semester: 'int' = 0, driver: 'webd
     return complete_course_list
 
 
-def select_course(class_id: 'str' = '', driver: 'webdriver' = None):
-    return
+def test_login_flow():
+    score = get_selected_course_list(2025, 1, cookie=jAccount.login())
+    for item in score:
+        print(item)
+
+
+if __name__ == '__main__':
+    test_login_flow()

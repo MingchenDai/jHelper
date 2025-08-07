@@ -34,7 +34,7 @@ class AuthCookies(TypedDict):
     SLSessionID: str
 
 
-def _auth_cookies_to_dict(auth_cookies: AuthCookies) -> Dict[str, str]:
+def auth_cookies_to_dict(auth_cookies: AuthCookies) -> Dict[str, str]:
     """
     Converts the AuthCookies TypedDict into a dictionary suitable for
     the `requests` library cookie jar.
@@ -46,9 +46,9 @@ def _auth_cookies_to_dict(auth_cookies: AuthCookies) -> Dict[str, str]:
         A dictionary with cookie names mapped to their values.
     """
     return {
-        'keepalive': auth_cookies['keepalive'],
-        'JSESSIONID': auth_cookies['jSessionID'],
-        'sl-session': auth_cookies['SLSessionID']
+        'keepalive': auth_cookies.get('keepalive'),
+        'JSESSIONID': auth_cookies.get('jSessionID'),
+        'sl-session': auth_cookies.get('SLSessionID'),
     }
 
 
@@ -141,7 +141,7 @@ def _fetch_and_solve_captcha(session: requests.Session, uuid: str, referer_url: 
         raise RuntimeError(f"Failed to fetch captcha: {e}") from e
 
 
-def login(account: str = "", password: str = "") -> AuthCookies:
+def login(account: str = JACCOUNT_ACCOUNT, password: str = JACCOUNT_PASSWORD) -> AuthCookies:
     """
     Logs into SJTU jAccount and retrieves authentication cookies.
 
@@ -201,8 +201,8 @@ def login(account: str = "", password: str = "") -> AuthCookies:
                     final_response = session.get(login_page_url, timeout=10)
                     final_response.raise_for_status()
                     jSessionID = ""
-                    for cookie in final_response.cookies:
-                        if cookie.name == "JSESSIONID" and cookie.domain == "i.sjtu.edu.cn/":
+                    for cookie in session.cookies:
+                        if cookie.name == "JSESSIONID" and cookie.domain == "i.sjtu.edu.cn":
                             jSessionID = cookie.value
                             break
                     for resp in final_response.history:
@@ -240,7 +240,7 @@ def logout(user_auth_cookies: AuthCookies) -> None:
         return
 
     logger.info("Logging out...")
-    cookies = _auth_cookies_to_dict(user_auth_cookies)
+    cookies = auth_cookies_to_dict(user_auth_cookies)
     try:
         response = requests.get(ACADEMIC_INFORMATION_SERVICES_LOGOUT_URL, cookies=cookies, timeout=10)
         response.raise_for_status()
@@ -262,7 +262,7 @@ def is_login(user_auth_cookies: AuthCookies) -> bool:
     if not user_auth_cookies or not all(user_auth_cookies.values()):
         return False
 
-    cookies = _auth_cookies_to_dict(user_auth_cookies)
+    cookies = auth_cookies_to_dict(user_auth_cookies)
     try:
         response = requests.get(ACADEMIC_INFORMATION_SERVICES_MAIN_PAGE, cookies=cookies, allow_redirects=False,
                                 timeout=10)
